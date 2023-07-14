@@ -12,7 +12,7 @@ import groundingdino.datasets.transforms as T
 from groundingdino.util.inference import load_model as dino_load_model, predict as dino_predict, annotate as dino_annotate
 
 models = {
-	'vit_h': './pretrained/sam_vit_h_4b8939.pth',
+	'vit_h': '../sam-hq/checkpoints/sam_hq_vit_h.pth', #'./pretrained/sam_vit_h_4b8939.pth',
     'vit_b': './pretrained/sam_vit_b_01ec64.pth'
 }
 
@@ -260,19 +260,26 @@ if __name__ == "__main__":
         background = generate_checkerboard_image(input_x.shape[0], input_x.shape[1], 8)
 
         # calculate foreground with alpha blending
-        foreground_alpha = input_x * np.expand_dims(alpha, axis=2).repeat(3,2)/255 + background * (1 - np.expand_dims(alpha, axis=2).repeat(3,2))/255
+        #foreground_alpha = input_x * np.expand_dims(alpha, axis=2).repeat(3,2)/255 + background * (1 - np.expand_dims(alpha, axis=2).repeat(3,2))/255
+        #foreground_alpha[foreground_alpha>1] = 1
 
+        # Transparent Background using PIL
+        # Not sure the best way to do in NumPy...
+        img_mask = Image.fromarray(alpha * 255).convert('L')
+        img_og = Image.fromarray(input_x).convert('RGBA')
+        transparent = Image.new("RGBA", img_og.size, (0, 0, 0, 0))
+        img_composite = Image.composite(img_og, transparent, img_mask)
+
+        foreground_alpha = np.asarray(img_composite)
+        
         # calculate foreground with mask
         foreground_mask = input_x * np.expand_dims(mask/255, axis=2).repeat(3,2)/255 + background * (1 - np.expand_dims(mask/255, axis=2).repeat(3,2))/255
-
-        foreground_alpha[foreground_alpha>1] = 1
         foreground_mask[foreground_mask>1] = 1
 
         # return img, mask_all
         trimap[trimap==1] == 0.999
 
         # new background
-
         background_1 = cv2.imread('figs/sea.jpg')
         background_2 = cv2.imread('figs/forest.jpg')
         background_3 = cv2.imread('figs/sunny.jpg')
