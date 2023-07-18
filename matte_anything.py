@@ -12,7 +12,7 @@ import groundingdino.datasets.transforms as T
 from groundingdino.util.inference import load_model as dino_load_model, predict as dino_predict, annotate as dino_annotate
 
 models = {
-	'vit_h': '../sam-hq/checkpoints/sam_hq_vit_h.pth', #'./pretrained/sam_vit_h_4b8939.pth',
+	'vit_h': './pretrained/sam_hq_vit_h.pth', #'./pretrained/sam_vit_h_4b8939.pth',
     'vit_b': './pretrained/sam_vit_b_01ec64.pth'
 }
 
